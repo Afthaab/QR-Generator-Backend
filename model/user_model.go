@@ -8,14 +8,14 @@ type User struct {
 	Phoneno string `bson:"phoneo" JSON:"phoneno"`
 }
 
-type Admin struct {
+type TeacherData struct {
 	Name        string `json:"name"`
 	Email       string `json:"email"`
 	Password    string `json:"password"`
 	Newpassword string `json:"newpassword"`
 }
 
-type Adminlogin struct {
+type TeacherSignIn struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }

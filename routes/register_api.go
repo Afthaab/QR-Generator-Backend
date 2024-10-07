@@ -19,9 +19,9 @@ func RegisterAPI(router *gin.Engine, dbConn *mongo.Database) {
 	})
 
 	// user routes
-	router.POST("/user/create", handlerFunc.CreateUser)
+	// router.POST("/user/create", handlerFunc.CreateUser)
 
 	// admin routes
-	router.POST("/admin/register", handlerFunc.RegisterAdmin)
-	router.POST("/admin/login", handlerFunc.LoginAdmin)
+	// router.POST("/admin/register", handlerFunc.RegisterAdmin)
+	router.POST("/teacher/signin", handlerFunc.TeacherSignIn)
 }

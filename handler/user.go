@@ -4,11 +4,13 @@ import (
 	"context"
 	"net/http"
 	"qrgen/service/model"
+	"qrgen/service/service"
 	"qrgen/service/utilities"
 
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -66,6 +68,53 @@ func (h *hanlderLayer) TeacherSignIn(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"message": "success",
 		"name":    teacherData.Name,
+	})
+
+}
+
+func (h *hanlderLayer) StudentRegister(c *gin.Context) {
+	studentData := model.Student{}
+	err := c.BindJSON(&studentData)
+	if err != nil {
+		log.Error().Err(err).Msg("could not bind the request body with the struct")
+		utilities.BindJsonErrorResponse(c) // returning the error
+		return
+	}
+
+	collection := h.dbconn.Collection("class10")
+	result, err := collection.InsertOne(context.Background(), studentData)
+	if err != nil {
+		log.Error().Err(err).Msg("could not bind the request body with the struct")
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "could not create the user",
+		})
+		return
+	}
+
+	// get the userid
+	studentData.Id = result.InsertedID.(primitive.ObjectID).Hex()
+
+	// generate the qrCode scanner for the user id
+	_, _, err = service.QrCodeGen(studentData.Id, studentData.Name)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err,
+		})
+		return
+	}
+
+	err = service.SendEmail("afthab606@gmail.com", studentData.Name+".png")
+
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": err,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"userId": studentData.Id,
+		"name":   studentData.Name,
 	})
 
 }

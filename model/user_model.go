@@ -1,6 +1,6 @@
 package model
 
-type User struct {
+type Student struct {
 	Id      string `bson:"_id,omitempty" json:"id"`
 	Name    string `bson:"name" json:"name"`
 	Branch  string `bson:"branch" JSON:"branch"`

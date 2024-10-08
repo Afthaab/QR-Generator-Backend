@@ -6,6 +6,7 @@ type Student struct {
 	Branch  string `bson:"branch" JSON:"branch"`
 	Batch   string `bson:"batch" JSON:"batch"`
 	Phoneno string `bson:"phoneo" JSON:"phoneno"`
+	Email   string `bson:"email" JSON:"email"`
 }
 
 type TeacherData struct {

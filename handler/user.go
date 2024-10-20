@@ -12,6 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type hanlderLayer struct {
@@ -87,7 +88,7 @@ func (h *hanlderLayer) StudentRegister(c *gin.Context) {
 	count, err := collection.CountDocuments(context.Background(), bson.M{"email": studentData.Email})
 	if err != nil {
 		log.Error().Err(err).Msg("could not check if email exists")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error   "})
 		return
 	}
 	if count > 0 {
@@ -144,6 +145,90 @@ func (h *hanlderLayer) StudentRegister(c *gin.Context) {
 		"userId": studentData.Id,
 		"name":   studentData.Name,
 	})
+}
+
+func (h *hanlderLayer) ViewAllStudents(c *gin.Context) {
+	// Step 1: Define the slice to store student details
+	var studentDetails []model.Student
+
+	// Step 2: Initialize MongoDB connection and collection
+	collection := h.dbconn.Collection("class10")
+
+	// Step 3: Create a find options (optional, you can customize projection, sorting, etc.)
+	findOptions := options.Find()
+
+	// Step 4: Fetch the documents
+	cursor, err := collection.Find(context.Background(), bson.M{}, findOptions)
+	if err != nil {
+		log.Error().Err(err).Msg("could not retrieve the data")
+		c.JSON(400, gin.H{
+			"error": "could not find the data",
+		})
+		return
+	}
+	defer cursor.Close(context.Background())
+
+	// Step 5: Iterate over the cursor and decode documents into the studentDetails slice
+	for cursor.Next(context.Background()) {
+		var student model.Student
+		if err := cursor.Decode(&student); err != nil {
+			log.Error().Err(err).Msg("could not retrieve the data")
+			c.JSON(400, gin.H{
+				"error": "could not find the data",
+			})
+			return
+		}
+		studentDetails = append(studentDetails, student)
+	}
+
+	// Step 6: Handle any cursor errors
+	if err := cursor.Err(); err != nil {
+		log.Error().Err(err).Msg("could not retrieve the data")
+		c.JSON(400, gin.H{
+			"error": "could not find the data",
+		})
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"student details": studentDetails,
+	})
+
+}
+
+func (h *hanlderLayer) ViewStudent(c *gin.Context) {
+	// Get the studentId from the URL
+	studentID := c.Param("studentId")
+
+	// Convert the string studentID to MongoDB ObjectID (if it's ObjectID)
+	objID, err := primitive.ObjectIDFromHex(studentID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid student ID"})
+		return
+	}
+
+	var studentDetail model.Student
+
+	// Step 2: Initialize MongoDB connection and collection
+	collection := h.dbconn.Collection("class10")
+
+	// Find the student in the MongoDB collection
+	err = collection.FindOne(context.TODO(), bson.M{"_id": objID}).Decode(&studentDetail)
+	if err == mongo.ErrNoDocuments {
+		// If no document found
+		c.JSON(http.StatusNotFound, gin.H{"message": "Student not found"})
+		return
+	} else if err != nil {
+		// Handle other potential errors
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Error finding student"})
+		return
+	}
+
+	// Return the student as JSON
+	c.JSON(http.StatusOK, gin.H{
+		"student detail": studentDetail,
+	})
+
 }
 
 // func (h *hanlderLayer) RegisterAdmin(c *gin.Context) {

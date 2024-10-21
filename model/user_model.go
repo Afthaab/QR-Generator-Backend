@@ -10,10 +10,10 @@ type Student struct {
 }
 
 type TeacherData struct {
-	Name        string `json:"name"`
-	Email       string `json:"email"`
-	Password    string `json:"password"`
-	Newpassword string `json:"newpassword"`
+	Name           string `json:"name"`
+	Email          string `json:"email"`
+	Password       string `json:"password"`
+	Repeatpassword string `json:"repeatpassword"`
 }
 
 type TeacherSignIn struct {

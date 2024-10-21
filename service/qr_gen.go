@@ -4,10 +4,9 @@ import (
 	"fmt"
 	"image/png"
 	"os"
+	"path/filepath"
 
-	// barcode scale
 	"github.com/boombuler/barcode"
-	// Build the QRcode for the text
 	"github.com/boombuler/barcode/qr"
 )
 
@@ -15,28 +14,38 @@ func QrCodeGen(t string, filename string) (*os.File, barcode.Barcode, error) {
 	// Create the barcode
 	qrCode, err := qr.Encode(t, qr.M, qr.Auto)
 	if err != nil {
-		fmt.Println("could not generate the qr code : ", err)
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("could not generate the qr code: %w", err)
 	}
 
-	// Scale the barcode to 200x200 pixels
+	// Scale the barcode to 2000x2000 pixels
 	qrCode, err = barcode.Scale(qrCode, 2000, 2000)
 	if err != nil {
-		fmt.Println("could not scale the qr code : ", err)
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("could not scale the qr code: %w", err)
 	}
 
-	// create the output file
-	file, err := os.Create(filename + ".png")
+	// Define the output directory
+	outputDir := filepath.Join("QR-Generator-UI", "QR_Codes")
+
+	// Ensure the directory exists
+	err = os.MkdirAll(outputDir, os.ModePerm)
 	if err != nil {
-		fmt.Println("could not create the file : ", err)
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("could not create directory: %w", err)
 	}
 
+	// Create the output file in the specified directory
+	filePath := filepath.Join(outputDir, filename+".png")
+	file, err := os.Create(filePath)
+	if err != nil {
+		return nil, nil, fmt.Errorf("could not create the file: %w", err)
+	}
+
+	// Ensure the file is closed after writing
 	defer file.Close()
 
-	// encode the barcode as png
-	png.Encode(file, qrCode)
+	// Encode the barcode as PNG
+	if err = png.Encode(file, qrCode); err != nil {
+		return nil, nil, fmt.Errorf("could not encode the png: %w", err)
+	}
 
-	return file, qrCode, err
+	return file, qrCode, nil
 }

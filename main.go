@@ -33,7 +33,7 @@ func main() {
 	router := gin.Default()
 
 	router.Use(func(c *gin.Context) {
-		c.Header("Access-Control-Allow-Origin", "http://127.0.0.1:5500")
+		c.Header("Access-Control-Allow-Origin", "http://localhost:8000")
 		c.Header("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 		c.Header("Access-Control-Allow-Headers", "Content-Type, Authorization")
 		if c.Request.Method == "OPTIONS" {

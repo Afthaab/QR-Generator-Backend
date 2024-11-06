@@ -28,4 +28,5 @@ func RegisterAPI(router *gin.Engine, dbConn *mongo.Database) {
 	router.GET("/student/view/all", handlerFunc.ViewAllStudents)
 	router.GET("/student/view/:studentId", handlerFunc.ViewStudent)
 	router.POST("/teacher/signup", handlerFunc.TeacherSignup)
+	router.POST("/register/attendance", handlerFunc.RegisterAttendance)
 }

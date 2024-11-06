@@ -51,6 +51,13 @@ func ConnectToMongoDB() (*mongo.Database, error) {
 		}
 	}
 
+	if !utilities.Contains(collectionNames, "attandance") {
+		err = databseConn.CreateCollection(ctx, "attandance")
+		if err != nil {
+			return nil, fmt.Errorf("failed to create 'attandance' collection: %v", err)
+		}
+	}
+
 	log.Info().Msg("pinged your deployment. You successfully connected to MongoDB!")
 
 	return databseConn, nil

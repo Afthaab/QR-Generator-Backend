@@ -24,7 +24,7 @@ func QrCodeGen(t string, filename string) (*os.File, barcode.Barcode, error) {
 	}
 
 	// Define the output directory
-	outputDir := filepath.Join("QR-Generator-UI", "QR_Codes")
+	outputDir := filepath.Join("QR_Codes")
 
 	// Ensure the directory exists
 	err = os.MkdirAll(outputDir, os.ModePerm)

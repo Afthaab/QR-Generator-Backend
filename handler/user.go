@@ -2,10 +2,14 @@ package handler
 
 import (
 	"context"
+	"encoding/base64"
+	"fmt"
+	"io/ioutil"
 	"net/http"
 	"qrgen/service/model"
 	"qrgen/service/service"
 	"qrgen/service/utilities"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
@@ -147,6 +151,8 @@ func (h *hanlderLayer) StudentRegister(c *gin.Context) {
 		return
 	}
 
+	studentData.Attandance = make(map[string]string)
+
 	// Step 4: Insert the student data into MongoDB
 	result, err := collection.InsertOne(context.Background(), studentData)
 	if err != nil {
@@ -180,7 +186,7 @@ func (h *hanlderLayer) StudentRegister(c *gin.Context) {
 	}
 
 	// Step 7: Send an email with the generated QR code
-	err = service.SendEmail(studentData.Email, "QR-Generator-UI/QR_Codes/"+studentData.Id+".png")
+	err = service.SendEmail(studentData.Email, "QR_Codes/"+studentData.Id+".png")
 	if err != nil {
 		log.Error().Err(err).Msg("could not send the email with QR code")
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -273,106 +279,91 @@ func (h *hanlderLayer) ViewStudent(c *gin.Context) {
 		return
 	}
 
+	// Load the image from local folder and encode it in base64
+	imagePath := fmt.Sprintf("./QR_Codes/%s.png", studentID)
+	imageData, err := ioutil.ReadFile(imagePath)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Error reading student image"})
+		return
+	}
+
+	// Encode image to base64
+	studentDetail.Image = base64.StdEncoding.EncodeToString(imageData)
+
 	// Return the student as JSON
 	c.JSON(http.StatusOK, gin.H{
 		"student detail": studentDetail,
 	})
-
 }
 
-// func (h *hanlderLayer) RegisterAdmin(c *gin.Context) {
-// 	adminData := model.TeacherData{}
+func (h *hanlderLayer) RegisterAttendance(c *gin.Context) {
+	registerData := model.RegisterAttendance{}
 
-// 	err := c.BindJSON(&adminData)
-// 	if err != nil {
-// 		log.Error().Err(err).Msg("could not bind the request body with the struct")
-// 		utilities.BindJsonErrorResponse(c) // returning the error
-// 		return
-// 	}
+	// Step 1: Bind JSON body to struct
+	if err := c.BindJSON(&registerData); err != nil {
+		log.Error().Err(err).Msg("could not bind the request body to the object struct")
+		utilities.BindJsonErrorResponse(c) // return the error response
+		return
+	}
 
-// 	collection := h.dbconn.Collection("admin")
+	// Convert the string studentID to MongoDB ObjectID (if it's ObjectID)
+	objID, err := primitive.ObjectIDFromHex(registerData.Id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid student ID"})
+		return
+	}
 
-// 	filter := bson.M{"email": adminData.Email}
+	var studentDetail model.Student
 
-// 	err = collection.FindOne(context.Background(), filter).Decode(&adminData)
-// 	if err == nil {
-// 		log.Error().Err(err).Msg("email already exists in the database")
-// 		c.JSON(http.StatusBadRequest, gin.H{
-// 			"error": "email address already exists",
-// 		})
-// 		return
-// 	}
+	// Step 2: Initialize MongoDB connection and collection
+	collection := h.dbconn.Collection("class10")
 
-// 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(adminData.Password), bcrypt.DefaultCost)
-// 	if err != nil {
-// 		log.Error().Err(err).Msg("could not hash the password")
-// 		c.JSON(http.StatusBadRequest, gin.H{
-// 			"error": "invalid request",
-// 		})
-// 		return
-// 	}
+	// Find the student in the MongoDB collection
+	err = collection.FindOne(context.TODO(), bson.M{"_id": objID}).Decode(&studentDetail)
+	if err == mongo.ErrNoDocuments {
+		// If no document found
+		c.JSON(http.StatusNotFound, gin.H{"message": "Student not found"})
+		return
+	} else if err != nil {
+		// Handle other potential errors
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Error finding student"})
+		return
+	}
 
-// 	adminData.Password = string(hashedPassword)
+	if studentDetail.Attandance[time.Now().Format("02-01-2006")] == "Present" {
+		c.JSON(400, gin.H{
+			"error": "attendance already registred",
+		})
+		return
+	}
 
-// 	_, err = collection.InsertOne(context.Background(), adminData)
-// 	if err != nil {
-// 		log.Error().Err(err).Msg("could not bind the request body with the struct")
-// 		c.JSON(http.StatusBadRequest, gin.H{
-// 			"error": "could not create the user",
-// 		})
-// 		return
-// 	}
+	presentDate := time.Now().Format("02-01-2006") // Use current date as an example
+	status := "Present"
 
-// 	c.JSON(200, gin.H{
-// 		"message": "successfully registered",
-// 	})
-// }
+	// Update the document: add new date to Attandance map
+	update := bson.M{
+		"$set": bson.M{
+			"attandance." + presentDate: status, // Use dot notation to set the new date in the map
+		},
+	}
 
-// func (h *hanlderLayer) CreateUser(c *gin.Context) {
-// 	userData := model.User{}
-// 	// marshall the request
-// 	err := c.BindJSON(&userData)
-// 	if err != nil {
-// 		log.Error().Err(err).Msg("could not bind the request body with the struct") // log the error
-// 		utilities.BindJsonErrorResponse(c)                                          // returning the error
-// 		return
-// 	}
+	// Perform the update
+	result, err := collection.UpdateOne(context.TODO(), bson.M{"_id": objID}, update)
+	if err != nil {
+		fmt.Println(err, "[[[[[[[[[[[]]]]]]]]]]]")
+		// Handle other potential errors
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "error updating the attandance"})
+		return
+	}
 
-// 	// create the user
-// 	collection := h.dbconn.Collection("class10")
-// 	result, err := collection.InsertOne(context.Background(), userData)
-// 	if err != nil {
-// 		log.Error().Err(err).Msg("could not bind the request body with the struct")
-// 		c.JSON(http.StatusBadRequest, gin.H{
-// 			"error": "could not create the user",
-// 		})
-// 		return
-// 	}
+	if result.MatchedCount < 1 {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "No documents matched the filter",
+		})
+		return
+	}
 
-// 	// get the userid
-// 	userData.Id = result.InsertedID.(primitive.ObjectID).Hex()
-
-// 	// generate the qrCode scanner for the user id
-// 	_, _, err = service.QrCodeGen(userData.Id, userData.Name)
-// 	if err != nil {
-// 		c.JSON(http.StatusBadRequest, gin.H{
-// 			"error": err,
-// 		})
-// 		return
-// 	}
-
-// 	err = service.SendEmail("afthab606@gmail.com", userData.Name+".png")
-
-// 	if err != nil {
-// 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-// 			"error": err,
-// 		})
-// 		return
-// 	}
-
-// 	c.JSON(http.StatusOK, gin.H{
-// 		"userId": userData.Id,
-// 		"name":   userData.Name,
-// 	})
-
-// }
+	c.JSON(200, gin.H{
+		"success": "successfully registered the attendance",
+	})
+}

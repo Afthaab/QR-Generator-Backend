@@ -1,7 +1,5 @@
 package model
 
-import "time"
-
 // Student struct represents a student entity
 type Student struct {
 	Id         string            `bson:"_id,omitempty" json:"id"`
@@ -19,8 +17,8 @@ type RegisterAttendance struct {
 }
 
 // Attandance struct represents a date for attendance
-type Attandance struct {
-	Date time.Time `bson:"date" json:"date"`
+type GetAttendance struct {
+	Date string `json:"date"`
 }
 
 // TeacherData struct represents teacher registration data
@@ -35,4 +33,9 @@ type TeacherData struct {
 type TeacherSignIn struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
+}
+
+type TimeSheet struct {
+	Date      string   `bson:"date" json:"date"`
+	Attendees []string `bson:"Attendees" json:"Attendees"`
 }

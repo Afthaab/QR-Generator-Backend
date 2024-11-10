@@ -350,7 +350,6 @@ func (h *hanlderLayer) RegisterAttendance(c *gin.Context) {
 	// Perform the update
 	result, err := collection.UpdateOne(context.TODO(), bson.M{"_id": objID}, update)
 	if err != nil {
-		fmt.Println(err, "[[[[[[[[[[[]]]]]]]]]]]")
 		// Handle other potential errors
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "error updating the attandance"})
 		return
@@ -363,7 +362,73 @@ func (h *hanlderLayer) RegisterAttendance(c *gin.Context) {
 		return
 	}
 
+	// Step 2: Initialize MongoDB connection and collection
+	collection = h.dbconn.Collection("attandance")
+
+	// Find document with the current date
+	filter1 := bson.M{"date": presentDate}
+	update1 := bson.M{"$addToSet": bson.M{"Attendees": studentDetail.Name}}
+
+	// Try to update the document
+	updateResult, err := collection.UpdateOne(context.Background(), filter1, update1)
+	if err != nil {
+		// Handle other potential errors
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "error updating the attandance"})
+		return
+	}
+
+	// Check if a document was modified
+	if updateResult.MatchedCount == 0 {
+		// Document not found, so insert a new one
+		newDoc := model.TimeSheet{
+			Date: presentDate,
+			Attendees: []string{
+				studentDetail.Name,
+			},
+		}
+
+		_, err := collection.InsertOne(context.Background(), newDoc)
+		if err != nil {
+			// Check if it's a MongoDB duplicate key error (E11000)
+			if mongo.IsDuplicateKeyError(err) {
+				log.Error().Err(err).Msg("duplicate key error: date or another field might be unique")
+				c.JSON(http.StatusConflict, gin.H{
+					"error": "duplicate record exists for the timesheet",
+				})
+				return
+			}
+
+			log.Error().Err(err).Msg("could not insert attendacne data into the collection")
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": "could not create the attendance record",
+			})
+			return
+		}
+	}
+
 	c.JSON(200, gin.H{
 		"success": "successfully registered the attendance",
+	})
+}
+
+func (h *hanlderLayer) ViewAllAttendacne(c *gin.Context) {
+	// Get the studentId from the URL
+	date := c.Param("date")
+	attendanceData := model.TimeSheet{}
+
+	collection := h.dbconn.Collection("attandance")
+	err := collection.FindOne(context.TODO(), bson.M{"date": date}).Decode(&attendanceData)
+	if err == mongo.ErrNoDocuments {
+		// If no document found
+		c.JSON(http.StatusNotFound, gin.H{"message": "data not found for the give date"})
+		return
+	} else if err != nil {
+		// Handle other potential errors
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "error finding the date"})
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"attendees": attendanceData.Attendees,
 	})
 }

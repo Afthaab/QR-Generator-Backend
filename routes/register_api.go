@@ -30,4 +30,5 @@ func RegisterAPI(router *gin.Engine, dbConn *mongo.Database) {
 	router.POST("/teacher/signup", handlerFunc.TeacherSignup)
 	router.POST("/register/attendance", handlerFunc.RegisterAttendance)
 	router.GET("/view/all/attendance/:date", handlerFunc.ViewAllAttendacne)
+	router.POST("/student/sign/in", handlerFunc.StudentSignIn)
 }

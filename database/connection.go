@@ -37,10 +37,10 @@ func ConnectToMongoDB() (*mongo.Database, error) {
 		return nil, fmt.Errorf("failed to list collection names: %v", err)
 	}
 
-	if !utilities.Contains(collectionNames, "class10") {
-		err = databseConn.CreateCollection(ctx, "class10")
+	if !utilities.Contains(collectionNames, "students") {
+		err = databseConn.CreateCollection(ctx, "students")
 		if err != nil {
-			return nil, fmt.Errorf("failed to create 'class10' collection: %v", err)
+			return nil, fmt.Errorf("failed to create 'students' collection: %v", err)
 		}
 	}
 

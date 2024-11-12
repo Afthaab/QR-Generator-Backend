@@ -9,6 +9,7 @@ type Student struct {
 	Phoneno    string            `bson:"phoneo" json:"phoneno"`
 	Email      string            `bson:"email" json:"email"`
 	Image      string            `json:"image"`
+	Password   string            `bson:"Password" json:"Password"`
 	Attandance map[string]string `bson:"attandance" json:"attandance"`
 }
 
@@ -38,4 +39,9 @@ type TeacherSignIn struct {
 type TimeSheet struct {
 	Date      string   `bson:"date" json:"date"`
 	Attendees []string `bson:"Attendees" json:"Attendees"`
+}
+
+type StudentSignIn struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }

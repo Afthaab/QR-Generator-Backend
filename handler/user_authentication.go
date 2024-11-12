@@ -2,7 +2,9 @@ package handler
 
 import (
 	"context"
+	"errors"
 	"net/http"
+	"os"
 	"qrgen/service/model"
 	"qrgen/service/utilities"
 
@@ -21,12 +23,10 @@ func (h *hanlderLayer) TeacherSignup(c *gin.Context) {
 		utilities.BindJsonErrorResponse(c) // return the error response
 		return
 	}
-
-	// check if the passwords match
-	if teacherData.Password != teacherData.Repeatpassword {
-		c.JSON(400, gin.H{
-			"error": "passwords do not match",
-		})
+	securityKey := os.Getenv("SECURITYKEY")
+	if securityKey != teacherData.Securitykey {
+		log.Error().Err(errors.New("securitykey invalid")).Msg("securityKey failed")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Security Key is Invalid"})
 		return
 	}
 

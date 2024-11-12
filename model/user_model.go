@@ -28,6 +28,7 @@ type TeacherData struct {
 	Email          string `json:"email"`
 	Password       string `json:"password"`
 	Repeatpassword string `json:"repeatpassword"`
+	Securitykey    string `json:"securitykey"`
 }
 
 // TeacherSignIn struct represents teacher sign-in data

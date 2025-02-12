@@ -178,7 +178,7 @@ func (h *hanlderLayer) RegisterAttendance(c *gin.Context) {
 
 	if studentDetail.Attandance[time.Now().Format("02-01-2006")] == "Present" {
 		c.JSON(400, gin.H{
-			"error": "attendance already registred",
+			"message": "attendance already registred",
 		})
 		return
 	}
@@ -203,7 +203,7 @@ func (h *hanlderLayer) RegisterAttendance(c *gin.Context) {
 
 	if result.MatchedCount < 1 {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "No documents matched the filter",
+			"message": "No documents matched the filter",
 		})
 		return
 	}
@@ -239,14 +239,14 @@ func (h *hanlderLayer) RegisterAttendance(c *gin.Context) {
 			if mongo.IsDuplicateKeyError(err) {
 				log.Error().Err(err).Msg("duplicate key error: date or another field might be unique")
 				c.JSON(http.StatusConflict, gin.H{
-					"error": "duplicate record exists for the timesheet",
+					"message": "duplicate record exists for the timesheet",
 				})
 				return
 			}
 
 			log.Error().Err(err).Msg("could not insert attendacne data into the collection")
 			c.JSON(http.StatusInternalServerError, gin.H{
-				"error": "could not create the attendance record",
+				"message": "could not create the attendance record",
 			})
 			return
 		}

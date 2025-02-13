@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 	"os"
+	"qrgen/service/authentication"
 	"qrgen/service/database"
 	"qrgen/service/routes"
 
@@ -43,8 +44,12 @@ func main() {
 		c.Next()
 	})
 
+	signingKey := os.Getenv("SIGNINGKEY")
+
+	auth := authentication.NewAuth(signingKey)
+
 	// registers the routers in the routes package
-	routes.RegisterAPI(router, dbConn)
+	routes.RegisterAPI(router, dbConn, auth)
 
 	// listen and serve on 0.0.0.0:8080 ("localhost:8080")~
 	router.Run(os.Getenv("SEVERICE_PORT"))

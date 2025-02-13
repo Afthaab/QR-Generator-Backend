@@ -2,14 +2,15 @@ package routes
 
 import (
 	"net/http"
+	"qrgen/service/authentication"
 	"qrgen/service/handler"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func RegisterAPI(router *gin.Engine, dbConn *mongo.Database) {
-	handlerFunc := handler.NewHandler(dbConn)
+func RegisterAPI(router *gin.Engine, dbConn *mongo.Database, auth authentication.Auth) {
+	handlerFunc := handler.NewHandler(dbConn, auth)
 
 	// health check router to check if the server is working fine
 	router.GET("/health", func(ctx *gin.Context) {

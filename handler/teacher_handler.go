@@ -77,7 +77,7 @@ func (h *hanlderLayer) StudentRegister(c *gin.Context) {
 	}
 
 	// Step 7: Send an email with the generated QR code
-	err = service.SendEmail("QR_Codes/"+studentData.Id+".png", studentData)
+	err = service.SendEmail("qr_codes/"+studentData.Id+".png", studentData)
 	if err != nil {
 		log.Error().Err(err).Msg("could not send the email with QR code")
 		c.JSON(http.StatusInternalServerError, gin.H{

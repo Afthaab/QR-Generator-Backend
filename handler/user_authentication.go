@@ -142,9 +142,18 @@ func (h *hanlderLayer) StudentSignIn(c *gin.Context) {
 		return
 	}
 
+	token, err := h.auth.GenerateJWT(studentData.Id)
+	if err != nil {
+		log.Error().Err(err).Msg("unable to generate the token")
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "unable to generate the token",
+		})
+		return
+	}
 	c.JSON(200, gin.H{
 		"message": "success",
 		"student": studentData,
+		"token":   token,
 	})
 
 }

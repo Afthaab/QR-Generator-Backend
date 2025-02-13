@@ -43,7 +43,7 @@ func (h *hanlderLayer) ViewStudent(c *gin.Context) {
 	}
 
 	// Load the image from local folder and encode it in base64
-	imagePath := fmt.Sprintf("./QR_Codes/%s.png", studentID)
+	imagePath := fmt.Sprintf("./qr_codes/%s.png", studentID)
 	imageData, err := ioutil.ReadFile(imagePath)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Error reading student image"})

@@ -1,4 +1,4 @@
-package authentication
+package auth
 
 import "github.com/golang-jwt/jwt/v5"
 
@@ -13,7 +13,7 @@ type authentication struct {
 
 type Auth interface {
 	GenerateJWT(uid string) (string, error)
-	ParseJWT(tokenString string) (*Claims, error)
+	ValidateToken(tokenString string) (*Claims, error)
 }
 
 func NewAuth(signingKey string) Auth {

@@ -3,7 +3,7 @@ package main
 import (
 	"net/http"
 	"os"
-	"qrgen/service/authentication"
+	"qrgen/service/auth"
 	"qrgen/service/database"
 	"qrgen/service/routes"
 
@@ -46,7 +46,7 @@ func main() {
 
 	signingKey := os.Getenv("SIGNINGKEY")
 
-	auth := authentication.NewAuth(signingKey)
+	auth := auth.NewAuth(signingKey)
 
 	// registers the routers in the routes package
 	routes.RegisterAPI(router, dbConn, auth)

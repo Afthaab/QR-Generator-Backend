@@ -9,14 +9,24 @@ import (
 	"qrgen/service/model"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog/log"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func (h *hanlderLayer) ViewStudent(c *gin.Context) {
-	// Get the studentId from the URL
-	studentID := c.Param("studentId")
+
+	ctx := c.Request.Context()
+
+	studentID, ok := ctx.Value("claimskey").(string)
+	if !ok {
+		log.Error().Msg("traceid missing from context")
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": http.StatusText(http.StatusInternalServerError),
+		})
+		return
+	}
 
 	// Convert the string studentID to MongoDB ObjectID (if it's ObjectID)
 	objID, err := primitive.ObjectIDFromHex(studentID)

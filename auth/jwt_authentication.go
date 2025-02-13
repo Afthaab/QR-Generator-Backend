@@ -1,4 +1,4 @@
-package authentication
+package auth
 
 import (
 	"fmt"
@@ -21,7 +21,7 @@ func (a *authentication) GenerateJWT(uid string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	// Generate and return the signed token
-	tokenString, err := token.SignedString(a.signingKey)
+	tokenString, err := token.SignedString([]byte(a.signingKey))
 	if err != nil {
 		return "", err
 	}
@@ -29,14 +29,14 @@ func (a *authentication) GenerateJWT(uid string) (string, error) {
 	return tokenString, nil
 }
 
-func (a *authentication) ParseJWT(tokenString string) (*Claims, error) {
+func (a *authentication) ValidateToken(tokenString string) (*Claims, error) {
 	// Parse the token with the key
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		// Check if the signing method is correct
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method")
 		}
-		return a.signingKey, nil
+		return []byte(a.signingKey), nil
 	})
 
 	if err != nil {

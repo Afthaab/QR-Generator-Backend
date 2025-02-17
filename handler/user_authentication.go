@@ -103,9 +103,18 @@ func (h *hanlderLayer) TeacherSignIn(c *gin.Context) {
 		return
 	}
 
+	token, err := h.auth.GenerateJWT(teacherData.Name)
+	if err != nil {
+		log.Error().Err(err).Msg("unable to generate the token")
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "unable to generate the token",
+		})
+		return
+	}
+
 	c.JSON(200, gin.H{
 		"message": "success",
-		"name":    teacherData.Name,
+		"token":   token,
 	})
 
 }

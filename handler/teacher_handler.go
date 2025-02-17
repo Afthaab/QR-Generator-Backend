@@ -17,6 +17,17 @@ import (
 )
 
 func (h *hanlderLayer) StudentRegister(c *gin.Context) {
+	ctx := c.Request.Context()
+
+	_, ok := ctx.Value("claimskey").(string)
+	if !ok {
+		log.Error().Msg("traceid missing from context")
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": http.StatusText(http.StatusInternalServerError),
+		})
+		return
+	}
+
 	studentData := model.Student{}
 
 	// Step 1: Bind JSON body to struct
@@ -94,6 +105,17 @@ func (h *hanlderLayer) StudentRegister(c *gin.Context) {
 }
 
 func (h *hanlderLayer) ViewAllStudents(c *gin.Context) {
+	ctx := c.Request.Context()
+
+	_, ok := ctx.Value("claimskey").(string)
+	if !ok {
+		log.Error().Msg("traceid missing from context")
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": http.StatusText(http.StatusInternalServerError),
+		})
+		return
+	}
+
 	// Step 1: Define the slice to store student details
 	var studentDetails []model.Student
 
@@ -143,6 +165,18 @@ func (h *hanlderLayer) ViewAllStudents(c *gin.Context) {
 }
 
 func (h *hanlderLayer) RegisterAttendance(c *gin.Context) {
+
+	ctx := c.Request.Context()
+
+	_, ok := ctx.Value("claimskey").(string)
+	if !ok {
+		log.Error().Msg("traceid missing from context")
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": http.StatusText(http.StatusInternalServerError),
+		})
+		return
+	}
+
 	registerData := model.RegisterAttendance{}
 
 	// Step 1: Bind JSON body to struct
@@ -258,6 +292,18 @@ func (h *hanlderLayer) RegisterAttendance(c *gin.Context) {
 }
 
 func (h *hanlderLayer) ViewAllAttendacne(c *gin.Context) {
+
+	ctx := c.Request.Context()
+
+	_, ok := ctx.Value("claimskey").(string)
+	if !ok {
+		log.Error().Msg("traceid missing from context")
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": http.StatusText(http.StatusInternalServerError),
+		})
+		return
+	}
+
 	// Get the studentId from the URL
 	date := c.Param("date")
 	attendanceData := model.TimeSheet{}

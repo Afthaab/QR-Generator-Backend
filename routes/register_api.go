@@ -28,11 +28,11 @@ func RegisterAPI(router *gin.Engine, dbConn *mongo.Database, auth auth.Auth) {
 	// admin routes
 	// router.POST("/admin/register", handlerFunc.RegisterAdmin)
 	router.POST("/teacher/signin", handlerFunc.TeacherSignIn)
-	router.POST("/teacher/student/register", handlerFunc.StudentRegister)
-	router.GET("/student/view/all", handlerFunc.ViewAllStudents)
+	router.POST("/teacher/student/register", m.Authenticate(handlerFunc.StudentRegister))
+	router.GET("/student/view/all", m.Authenticate(handlerFunc.ViewAllStudents))
 	router.GET("/student/view", m.Authenticate(handlerFunc.ViewStudent))
 	router.POST("/teacher/signup", handlerFunc.TeacherSignup)
-	router.POST("/register/attendance", handlerFunc.RegisterAttendance)
+	router.POST("/register/attendance", m.Authenticate(handlerFunc.RegisterAttendance))
 	router.GET("/view/all/attendance/:date", handlerFunc.ViewAllAttendacne)
 	router.POST("/student/sign/in", handlerFunc.StudentSignIn)
 }

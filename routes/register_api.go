@@ -30,9 +30,11 @@ func RegisterAPI(router *gin.Engine, dbConn *mongo.Database, auth auth.Auth) {
 	router.POST("/teacher/signin", handlerFunc.TeacherSignIn)
 	router.POST("/teacher/student/register", m.Authenticate(handlerFunc.StudentRegister))
 	router.GET("/student/view/all", m.Authenticate(handlerFunc.ViewAllStudents))
-	router.GET("/student/view", m.Authenticate(handlerFunc.ViewStudent))
+	router.GET("/student/view/:studentId", m.Authenticate(handlerFunc.ViewStudentProfile))
 	router.POST("/teacher/signup", handlerFunc.TeacherSignup)
 	router.POST("/register/attendance", m.Authenticate(handlerFunc.RegisterAttendance))
 	router.GET("/view/all/attendance/:date", handlerFunc.ViewAllAttendacne)
+
 	router.POST("/student/sign/in", handlerFunc.StudentSignIn)
+	router.GET("/student/view", m.Authenticate(handlerFunc.ViewStudent))
 }

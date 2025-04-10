@@ -15,7 +15,6 @@ func (m *middleware) Authenticate(next gin.HandlerFunc) gin.HandlerFunc {
 
 		ctx := c.Request.Context()
 
-		// Get token from Authorization header
 		tokenStr, err := getTokenFromHeader(c)
 		if err != nil {
 			log.Err(err).Msg("could not extract token from Authorization header")
@@ -25,7 +24,6 @@ func (m *middleware) Authenticate(next gin.HandlerFunc) gin.HandlerFunc {
 			return
 		}
 
-		// Validate JWT token
 		claims, err := m.auth.ValidateToken(tokenStr)
 		if err != nil {
 			log.Error().Err(err).Msg("could not validate token")
@@ -35,10 +33,8 @@ func (m *middleware) Authenticate(next gin.HandlerFunc) gin.HandlerFunc {
 			return
 		}
 
-		// If the token is valid, store the claims in the context
 		ctx = context.WithValue(ctx, "claimskey", claims.Uid)
 
-		// Create a new request with the updated context and assign it back to Gin context
 		req := c.Request.WithContext(ctx)
 		c.Request = req
 
